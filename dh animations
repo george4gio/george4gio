@@ -1,0 +1,71 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local animate = character:WaitForChild("Animate")
+local userInputService = game:GetService("UserInputService")
+local contextActionService = game:GetService("ContextActionService")
+local humanoid = character:WaitForChild("Humanoid")
+local animator = humanoid:WaitForChild("Animator")
+
+local defaultWalkSpeed = humanoid.WalkSpeed
+local defaultJumpPower = humanoid.JumpPower
+local movementDisabled = false  -- Starts with movement enabled
+
+local function disableMovement()
+    humanoid.WalkSpeed = 0
+    humanoid.JumpPower = 0
+    movementDisabled = true
+end
+
+local function enableMovement()
+    humanoid.WalkSpeed = defaultWalkSpeed
+    humanoid.JumpPower = defaultJumpPower
+    movementDisabled = false
+end
+
+local function toggleMovement()
+    if movementDisabled then
+        enableMovement()
+    else
+        disableMovement()
+    end
+end
+
+local function loadAnimations()
+    -- Run and Walk Animations
+    animate.run.RunAnim.AnimationId = "http://www.roblox.com/asset/?id=616163682" -- Run
+    animate.walk.WalkAnim.AnimationId = "http://www.roblox.com/asset/?id=616168032" -- Walk
+    animate.jump.JumpAnim.AnimationId = "http://www.roblox.com/asset/?id=5319841935" -- OldSchool Jump
+    
+    -- Disable default idle animation
+    animate.idle:ClearAllChildren()
+
+    -- Create Zombie Idle Animation
+    local zombieIdleAnim = Instance.new("Animation")
+    zombieIdleAnim.AnimationId = "http://www.roblox.com/asset/?id=616200044" -- Zombie Idle
+
+    -- Load Zombie Idle Animation into the humanoid's animator
+    animator:LoadAnimation(zombieIdleAnim)
+    zombieIdleAnim:Play()
+end
+
+player.CharacterAdded:Connect(function(char)
+    character = char
+    animate = character:WaitForChild("Animate")
+    humanoid = character:WaitForChild("Humanoid")
+    animator = humanoid:WaitForChild("Animator")
+
+    -- Store new default movement values
+    defaultWalkSpeed = humanoid.WalkSpeed
+    defaultJumpPower = humanoid.JumpPower
+
+    loadAnimations()
+end)
+
+userInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if gameProcessedEvent then return end
+    if input.KeyCode == Enum.KeyCode.P then  -- Press "P" to toggle movement
+        toggleMovement()
+    end
+end)
+
+loadAnimations()
